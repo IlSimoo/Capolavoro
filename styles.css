@@ -1,0 +1,127 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f0f0f0;
+    margin: 0;
+    padding: 0;
+    background-size: cover;
+}
+
+.container {
+    width: 80%;
+    margin: auto;
+    padding: 20px;
+}
+
+h1, .ricordi { /* Modifica della classe .ricordi per applicare lo stesso font e le stesse caratteristiche del titolo */
+    font-family: 'Lobster', cursive;
+    color: #f5f5dc;
+    text-align: center;
+    background-color: transparent;
+    padding: 10px;
+    border-radius: 10px;
+}
+
+h2 {
+    text-align: center;
+    color: #333;
+    background-color: transparent;
+    padding: 10px;
+    border-radius: 10px;
+}
+
+.upload-section {
+    text-align: center;
+    margin-bottom: 20px;
+    background-color: rgba(255, 255, 255, 0.7);
+    padding: 20px;
+    border-radius: 10px;
+}
+
+#fileInput, #patternInput {
+    padding: 10px;
+    margin: 10px 0;
+}
+
+button {
+    padding: 10px 20px;
+    background-color: #5cb85c;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+button:hover {
+    background-color: #4cae4c;
+}
+
+.gallery {
+    margin-top: 20px;
+    text-align: center;
+}
+
+#galleryContent {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center;
+}
+
+.gallery-item {
+    position: relative;
+    background-color: transparent;
+    border: none;
+    border-radius: 5px;
+    overflow: hidden;
+    width: 600px;
+    height: 600px;
+    display: none;
+    align-items: center;
+    justify-content: center;
+}
+
+.gallery-item img, .gallery-item video {
+    max-width: 100%;
+    max-height: 100%;
+    border-radius: 5px;
+}
+
+.gallery-item.active {
+    display: flex;
+}
+
+.remove-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    padding: 5px 10px;
+    background-color: red;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.remove-btn:hover {
+    background-color: darkred;
+}
+
+.nav-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: rgba(0, 0, 0, 0.5);
+    color: white;
+    border: none;
+    cursor: pointer;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+.nav-btn.prev-btn {
+    left: 10px;
+}
+
+.nav-btn.next-btn {
+    right: 10px;
+}

@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Galleria Fotografica e Video</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Lobster&display=swap" rel="stylesheet"> <!-- Aggiunta di Google Font -->
+</head>
+<body>
+    <div class="container">
+        <h1>La cosa più importante sviluppata in questi 4 anni</h1>
+        
+        <div class="upload-section" id="uploadSection">
+            <h2>Carica una Foto o un Video</h2>
+            <form id="uploadForm">
+                <input type="file" id="fileInput" accept="image/*,video/*" required>
+                <button type="submit">Carica</button>
+            </form>
+            
+            <h2>Carica un Pattern di Sfondo</h2>
+            <form id="patternForm">
+                <input type="file" id="patternInput" accept="image/*" required>
+                <button type="submit">Carica Pattern</button>
+            </form>
+
+            <h2>Seleziona il Pattern di Sfondo</h2>
+            <select id="backgroundPattern">
+                <option value="">Nessuno</option>
+            </select>
+            <button id="applyBackground">Applica Sfondo</button>
+        </div>
+        
+        <div class="gallery">
+            <h2 class="ricordi">Ricordi</h2> <!-- Aggiornamento della scritta "Galleria" -->
+            <div id="galleryContent"></div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const isAdmin = urlParams.get('admin') === 'true';
+
+            if (!isAdmin) {
+                document.getElementById('uploadSection').style.display = 'none';
+            }
+
+            loadGallery(isAdmin);
+            loadBackgroundPatterns();
+            applySavedBackground();
+
+            if (isAdmin) {
+                document.getElementById('uploadForm').addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    const fileInput = document.getElementById('fileInput');
+                    const file = fileInput.files[0];
+                    if (file) {
+                        const fileReader = new FileReader();
+                        fileReader.onload = function(e) {
+                            const dataUrl = e.target.result;
+                            saveToLocalStorage('galleryItems', file.name, dataUrl, file.type);
+                            addMediaToGallery(file.name, dataUrl, file.type, isAdmin);
+                        }
+                        fileReader.readAsDataURL(file);
+                    }
+                });
+
+                document.getElementById('patternForm').addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    const patternInput = document.getElementById('patternInput');
+                    const file = patternInput.files[0];
+                    if (file) {
+                        const fileReader = new FileReader();
+                        fileReader.onload = function(e) {
+                            const dataUrl = e.target.result;
+                            saveToLocalStorage('backgroundPatterns', file.name, dataUrl, file.type);
+                            addPatternOption(file.name, dataUrl);
+                        }
+                        fileReader.readAsDataURL(file);
+                    }
+                });
+
+                document.getElementById('applyBackground').addEventListener('click', function() {
+                    const selectedPattern = document.getElementById('backgroundPattern').value;
+                    if (selectedPattern) {
+                        document.body.style.backgroundImage = `url(${selectedPattern})`;
+                        localStorage.setItem('backgroundPattern', selectedPattern);
+                    } else {
+                        document.body.style.backgroundImage = '';
+                        localStorage.removeItem('backgroundPattern');
+                    }
+                });
+            }
+        });
+
+        function saveToLocalStorage(key, name, dataUrl, type) {
+            const items = JSON.parse(localStorage.getItem(key)) || [];
+            items.push({ name, dataUrl, type });
+            localStorage.setItem(key, JSON.stringify(items));
+        }
+
+        function loadGallery(isAdmin) {
+            const galleryItems = JSON.parse(localStorage.getItem('galleryItems')) || [];
+            galleryItems.forEach(item => {
+                addMediaToGallery(item.name, item.dataUrl, item.type, isAdmin);
+            });
+            if (galleryItems.length > 0) {
+                document.querySelectorAll('.gallery-item')[0].classList.add('active');
+            }
+        }
+
+        function loadBackgroundPatterns() {
+            const patterns = JSON.parse(localStorage.getItem('backgroundPatterns')) || [];
+            patterns.forEach(pattern => {
+                addPatternOption(pattern.name, pattern.dataUrl);
+            });
+        }
+
+        function applySavedBackground() {
+            const savedPattern = localStorage.getItem('backgroundPattern');
+            if (savedPattern) {
+                document.body.style.backgroundImage = `url(${savedPattern})`;
+                const patternSelect = document.getElementById('backgroundPattern');
+                if (patternSelect) {
+                    patternSelect.value = savedPattern;
+                }
+            }
+        }
+
+        function addMediaToGallery(name, dataUrl, type, isAdmin) {
+            const galleryContent = document.getElementById('galleryContent');
+            const div = document.createElement('div');
+            div.classList.add('gallery-item');
+            div.dataset.name = name;
+
+            if (type.startsWith('image/')) {
+                const img = document.createElement('img');
+                img.src = dataUrl;
+                img.alt = name;
+                div.appendChild(img);
+            } else if (type.startsWith('video/')) {
+                const video = document.createElement('video');
+                video.controls = true;
+                video.src = dataUrl;
+                div.appendChild(video);
+            }
+
+            if (isAdmin) {
+                const removeBtn = document.createElement('button');
+                removeBtn.classList.add('remove-btn');
+                removeBtn.textContent = 'Rimuovi';
+                removeBtn.onclick = function() {
+                    removeMediaFromGallery(name);
+                };
+                div.appendChild(removeBtn);
+            }
+
+            const prevBtn = document.createElement('button');
+            prevBtn.classList.add('nav-btn', 'prev-btn');
+            prevBtn.innerHTML = '&#10094;';
+            prevBtn.onclick = function() {
+                navigateGallery(-1);
+            };
+            div.appendChild(prevBtn);
+
+            const nextBtn = document.createElement('button');
+            nextBtn.classList.add('nav-btn', 'next-btn');
+            nextBtn.innerHTML = '&#10095;';
+            nextBtn.onclick = function() {
+                navigateGallery(1);
+            };
+            div.appendChild(nextBtn);
+
+            galleryContent.appendChild(div);
+        }
+
+        function addPatternOption(name, dataUrl) {
+            const patternSelect = document.getElementById('backgroundPattern');
+            const option = document.createElement('option');
+            option.value = dataUrl;
+            option.textContent = name;
+            patternSelect.appendChild(option);
+        }
+
+        function removeMediaFromGallery(name) {
+            const galleryItems = JSON.parse(localStorage.getItem('galleryItems')) || [];
+            const updatedGalleryItems = galleryItems.filter(item => item.name !== name);
+            localStorage.setItem('galleryItems', JSON.stringify(updatedGalleryItems));
+            document.querySelector(`.gallery-item[data-name="${name}"]`).remove();
+        }
+
+        function navigateGallery(direction) {
+            const galleryItems = document.querySelectorAll('.gallery-item');
+            let currentIndex = Array.from(galleryItems).findIndex(item => item.classList.contains('active'));
+            galleryItems[currentIndex].classList.remove('active');
+            currentIndex = (currentIndex + direction + galleryItems.length) % galleryItems.length;
+            galleryItems[currentIndex].classList.add('active');
+        }
+    </script>
+</body>
+</html>
